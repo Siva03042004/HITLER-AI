@@ -1,0 +1,6 @@
+{
+  "appId": "com.tcprivatelimited.hitlerai",
+  "appName": "HITLER AI V4",
+  "webDir": "public",
+  "server": { "androidScheme": "https" }
+}
