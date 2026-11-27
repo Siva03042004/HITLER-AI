@@ -1,13 +1,13 @@
 {
-  "name": "hitler-ai-v4",
-  "version": "4.0.0",
+  "name": "hitler-ai",
+  "version": "1.0.0",
   "private": true,
   "description": "Cross-platform AI workspace and social collaboration app",
   "main": "desktop/main.cjs",
   "scripts": {
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
-    "check": "node --check server/index.js && node --check server/app.js && node --check server/providers.js && node --check server/council.js && node --check api/[...route].js && node --check public/app.js && node --check desktop/main.cjs",
+    "check": "node --check server/index.js && node --check server/app.js && node --check server/auth.js && node --check server/db.js && node --check server/providers.js && node --check server/council.js && node --check api/[...route].js && node --check public/app.js && node --check public/auth-ui.js && node --check desktop/main.cjs",
     "test": "node --test",
     "desktop": "electron .",
     "dist": "electron-builder",
@@ -18,9 +18,11 @@
     "android:open": "npx cap open android"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "helmet": "^8.0.0"
+    "helmet": "^8.0.0",
+    "mongodb": "^6.12.0"
   },
   "devDependencies": {
     "electron": "^34.0.0",
@@ -28,7 +30,7 @@
   },
   "build": {
     "appId": "com.tctechnology.hitlerai",
-    "productName": "HITLER AI V4",
+    "productName": "HITLER AI",
     "directories": {
       "output": "release"
     },
