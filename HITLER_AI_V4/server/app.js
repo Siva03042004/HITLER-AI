@@ -10,6 +10,7 @@ app.set("trust proxy", 1);
 app.disable("x-powered-by");
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: "64kb" }));
+app.use((req, res, next) => req.path === "/index.html" ? res.redirect("/login") : next());
 app.use(express.static(path.join(__dirname, "..", "public"), { index: false }));
 
 const windows = new Map();
@@ -31,7 +32,7 @@ app.get("/api/agents", (_req, res) => res.json(agents));
 app.get("/", (_req, res) => res.redirect("/login"));
 app.get("/login", (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "login.html")));
 app.get("/signup", (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "signup.html")));
-app.get("/app", requireAuth, (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "index.html")));
+app.get("/app", async (req, res) => {\n  try {\n    const user = await findSessionUser(req);\n    if (!user) return res.redirect("/login");\n    res.sendFile(path.join(__dirname, "..", "public", "index.html"));\n  } catch {\n    res.status(503).send("Authentication service is temporarily unavailable.");\n  }\n});
 
 app.get("/api/auth/me", async (req, res) => {
   try {
