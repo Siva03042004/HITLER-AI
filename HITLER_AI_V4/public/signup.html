@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#080c14">
+  <title>Create account · HITLER AI</title>
+  <link rel="stylesheet" href="/auth.css">
+</head>
+<body>
+  <main class="auth-shell">
+    <a class="brand" href="/login"><span class="brand-mark">H</span><span><strong>HITLER AI</strong><small>TC PRIVATE LIMITED</small></span></a>
+    <section class="auth-card">
+      <div class="eyebrow">START WITH YOUR AI TEAM</div>
+      <h1>Create your account.</h1>
+      <p class="intro">One account for your personal AI workspace.</p>
+      <form id="signupForm">
+        <label for="name">Full name</label>
+        <input id="name" name="name" type="text" autocomplete="name" maxlength="80" placeholder="Your name" required>
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+        <label for="password">Password</label>
+        <div class="password-wrap">
+          <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="At least 8 characters" required>
+          <button type="button" class="toggle" data-toggle="password">Show</button>
+        </div>
+        <label for="confirmPassword">Confirm password</label>
+        <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="Enter password again" required>
+        <button class="submit" type="submit">Create account <span>→</span></button>
+        <p class="message" id="message" role="status" aria-live="polite"></p>
+      </form>
+      <p class="switch">Already have an account? <a href="/login">Sign in</a></p>
+    </section>
+    <p class="footnote">Use a unique password. Your account details are stored securely.</p>
+  </main>
+  <script src="/auth-ui.js"></script>
+</body>
+</html>
