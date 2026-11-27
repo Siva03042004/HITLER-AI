@@ -1,4 +1,4 @@
-# HITLER AI V4 — TC Private Limited
+# HITLER AI — TC Private Limited
 
 A cross-platform AI workspace foundation with a ChatGPT-style interface, multi-provider chat, five specialist AI personas, a local-first social feed, work studio, browser voice wake-word prototype, PWA support and Electron desktop packaging.
 
@@ -35,7 +35,7 @@ npm test
 npm start
 ```
 
-Open `http://localhost:8787`. Provider keys must never be placed in `public/`, a mobile bundle, source control, or chat.
+Open `http://localhost:8787/login`. Set `MONGODB_URI` and `MONGODB_DB_NAME` in your private `.env` file. Provider keys and database credentials must never be placed in `public/`, a mobile bundle, source control, or chat.
 
 ## Provider configuration
 Set one or more of `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, and `DEEPSEEK_API_KEY` in the server environment, and set the matching `*_MODEL` variable to an exact model ID currently enabled for that API account. The code intentionally has no stale hard-coded model defaults. For OpenAI, configure the GPT model your API account supports (including GPT-6 only if enabled for API use). Consumer product labels do not guarantee API availability; Astra needs an authorized supported endpoint before integration.
@@ -50,8 +50,11 @@ Wake-word listening is OFF by default. The user must turn it on and grant microp
 - **Linux:** `npm run dist:linux` on a Linux build machine.
 - **Web:** deploy the Node app or use the included Vercel function/config.
 
+## Authentication foundation
+The feature branch adds MongoDB-backed account registration and sign-in, bcrypt password hashing, random opaque session tokens stored as hashes, HttpOnly cookies, sign-out, and protected workspace/chat/council routes. Configure `MONGODB_URI` and `MONGODB_DB_NAME` in the deployment environment before testing. This implementation still requires a full runtime and security review before public launch.
+
 ## Important production gaps
-This is a feature-rich prototype/foundation, not a finished production social network or a certified “master AI”. Feed data is browser-local. Messages, accounts, cloud sync, multi-user social graph, notifications, media uploads, encrypted storage, billing, admin/moderation, real-time messaging, file ingestion, durable memory and secure tool execution are not yet implemented. The in-memory rate limiter is not sufficient for serverless production. Add a database, identity provider, distributed rate limits, monitoring, abuse controls, privacy policy, security review and backups before public launch.
+This is a product foundation, not a finished production social network or a certified “master AI”. Feed data remains browser-local. Cloud chat history, multi-user social graph, notifications, media uploads, end-to-end encrypted messaging, billing, admin/moderation, real-time messaging, file ingestion, durable memory and secure tool execution are not yet implemented. The in-memory rate limiter is not sufficient for serverless production. Add distributed rate limits, monitoring, abuse controls, privacy policy, security review and backups before public launch.
 
 ## Documentation
 - [`docs/ROADMAP.md`](docs/ROADMAP.md)
