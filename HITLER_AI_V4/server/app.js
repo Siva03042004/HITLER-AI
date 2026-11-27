@@ -32,7 +32,15 @@ app.get("/api/agents", (_req, res) => res.json(agents));
 app.get("/", (_req, res) => res.redirect("/login"));
 app.get("/login", (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "login.html")));
 app.get("/signup", (_req, res) => res.sendFile(path.join(__dirname, "..", "public", "signup.html")));
-app.get("/app", async (req, res) => {\n  try {\n    const user = await findSessionUser(req);\n    if (!user) return res.redirect("/login");\n    res.sendFile(path.join(__dirname, "..", "public", "index.html"));\n  } catch {\n    res.status(503).send("Authentication service is temporarily unavailable.");\n  }\n});
+app.get("/app", async (req, res) => {
+  try {
+    const user = await findSessionUser(req);
+    if (!user) return res.redirect("/login");
+    res.sendFile(path.join(__dirname, "..", "public", "index.html"));
+  } catch {
+    res.status(503).send("Authentication service is temporarily unavailable.");
+  }
+});
 
 app.get("/api/auth/me", async (req, res) => {
   try {
