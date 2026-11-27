@@ -1,0 +1,8 @@
+{
+  "name": "Hitler AI",
+  "description": "Multi-model AI workspace, Five-AI Council, specialist assistants, Work Studio, and social feed by TC Private Limited.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

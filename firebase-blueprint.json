@@ -1,0 +1,249 @@
+{
+  "entities": {
+    "Conversation": {
+      "title": "Conversation",
+      "description": "A user's AI Workspace conversation thread.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "title": {
+          "type": "string",
+          "description": "Conversation summary title (1-120 chars)."
+        },
+        "activeAgent": {
+          "type": "string",
+          "description": "Optional active specialist persona name."
+        },
+        "lastMessagePreview": {
+          "type": "string",
+          "description": "Short preview of the latest message (0-300 chars)."
+        },
+        "messageCount": {
+          "type": "integer",
+          "description": "Total number of messages in this conversation."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp written with FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp written with FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "title",
+        "lastMessagePreview",
+        "messageCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "An individual message turn within an AI Workspace conversation.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["user", "assistant"],
+          "description": "Message author role."
+        },
+        "senderLabel": {
+          "type": "string",
+          "description": "Display label such as YOU, HITLER AI, or specialist name."
+        },
+        "content": {
+          "type": "string",
+          "description": "Message text content (1-16000 chars)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp written with FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "role",
+        "senderLabel",
+        "content",
+        "createdAt"
+      ]
+    },
+    "CouncilSession": {
+      "title": "CouncilSession",
+      "description": "A completed Five-AI Council session with specialist turns and Head synthesis.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "prompt": {
+          "type": "string",
+          "description": "Original prompt submitted to the council (1-4000 chars)."
+        },
+        "edithResponse": {
+          "type": "string",
+          "description": "Research and context specialist response."
+        },
+        "visionResponse": {
+          "type": "string",
+          "description": "Analysis and foresight specialist response."
+        },
+        "ultronResponse": {
+          "type": "string",
+          "description": "Strategy and optimization specialist response."
+        },
+        "fridayResponse": {
+          "type": "string",
+          "description": "Execution and delivery specialist response."
+        },
+        "jarvisResponse": {
+          "type": "string",
+          "description": "Personal assistant and quality specialist response."
+        },
+        "synthesis": {
+          "type": "string",
+          "description": "Head chairperson synthesis response."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp written with FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "prompt",
+        "edithResponse",
+        "visionResponse",
+        "ultronResponse",
+        "fridayResponse",
+        "jarvisResponse",
+        "synthesis",
+        "createdAt"
+      ]
+    },
+    "FeedPost": {
+      "title": "FeedPost",
+      "description": "A workspace Social Feed post with likes and comments.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "authorName": {
+          "type": "string",
+          "description": "Display name of the post author (1-80 chars)."
+        },
+        "text": {
+          "type": "string",
+          "description": "Post body text (1-2000 chars)."
+        },
+        "likes": {
+          "type": "integer",
+          "description": "Like count (>= 0)."
+        },
+        "likedByMe": {
+          "type": "boolean",
+          "description": "Whether the current user liked this post."
+        },
+        "comments": {
+          "type": "array",
+          "description": "Bounded list of comment strings (max 50)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp written with FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp written with FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "authorName",
+        "text",
+        "likes",
+        "likedByMe",
+        "comments",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "LibraryItem": {
+      "title": "LibraryItem",
+      "description": "A saved AI response, council synthesis, or Work Studio output in the user's Library.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "title": {
+          "type": "string",
+          "description": "Saved item title (1-140 chars)."
+        },
+        "category": {
+          "type": "string",
+          "enum": ["chat", "council", "work"],
+          "description": "Origin category of the saved item."
+        },
+        "content": {
+          "type": "string",
+          "description": "Saved text content (1-16000 chars)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp written with FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "title",
+        "category",
+        "content",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/conversations/{conversationId}": {
+      "schema": { "$ref": "#/entities/Conversation" },
+      "description": "Per-user AI Workspace conversation threads."
+    },
+    "/users/{userId}/conversations/{conversationId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ChatMessage" },
+      "description": "Messages belonging to a specific user conversation."
+    },
+    "/users/{userId}/councilSessions/{sessionId}": {
+      "schema": { "$ref": "#/entities/CouncilSession" },
+      "description": "Per-user Five-AI Council history."
+    },
+    "/users/{userId}/feedPosts/{postId}": {
+      "schema": { "$ref": "#/entities/FeedPost" },
+      "description": "Per-user Social Feed posts, likes, and comments."
+    },
+    "/users/{userId}/libraryItems/{itemId}": {
+      "schema": { "$ref": "#/entities/LibraryItem" },
+      "description": "Per-user saved Library items."
+    }
+  }
+}

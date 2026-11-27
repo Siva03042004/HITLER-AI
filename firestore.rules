@@ -1,0 +1,188 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: Default-deny all paths unless explicitly matched
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- GLOBAL HELPERS ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- VALIDATION BLUEPRINTS ---
+    function isValidConversation(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 120 &&
+             (!('activeAgent' in data) || (data.activeAgent is string && data.activeAgent.size() >= 1 && data.activeAgent.size() <= 40)) &&
+             data.lastMessagePreview is string && data.lastMessagePreview.size() <= 300 &&
+             data.messageCount is int && data.messageCount >= 0 && data.messageCount <= 10000;
+    }
+
+    function isValidChatMessage(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.role is string && data.role in ['user', 'assistant'] &&
+             data.senderLabel is string && data.senderLabel.size() >= 1 && data.senderLabel.size() <= 40 &&
+             data.content is string && data.content.size() >= 1 && data.content.size() <= 16000;
+    }
+
+    function isValidCouncilSession(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.prompt is string && data.prompt.size() >= 1 && data.prompt.size() <= 4000 &&
+             data.edithResponse is string && data.edithResponse.size() <= 8000 &&
+             data.visionResponse is string && data.visionResponse.size() <= 8000 &&
+             data.ultronResponse is string && data.ultronResponse.size() <= 8000 &&
+             data.fridayResponse is string && data.fridayResponse.size() <= 8000 &&
+             data.jarvisResponse is string && data.jarvisResponse.size() <= 8000 &&
+             data.synthesis is string && data.synthesis.size() <= 10000;
+    }
+
+    function isValidFeedPost(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 80 &&
+             data.text is string && data.text.size() >= 1 && data.text.size() <= 2000 &&
+             data.likes is int && data.likes >= 0 && data.likes <= 1000000 &&
+             data.likedByMe is bool &&
+             data.comments is list && data.comments.size() <= 50 &&
+             (data.comments.size() == 0 || (data.comments[0] is string && data.comments[0].size() <= 500));
+    }
+
+    function isValidLibraryItem(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 140 &&
+             data.category is string && data.category in ['chat', 'council', 'work'] &&
+             data.content is string && data.content.size() >= 1 && data.content.size() <= 16000;
+    }
+
+    // --- USER-SCOPED WORKSPACE COLLECTIONS ---
+    match /users/{userId} {
+
+      // Conversations
+      match /conversations/{conversationId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(conversationId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(conversationId) &&
+                         isValidConversation(incoming()) &&
+                         incoming().userId == request.auth.uid &&
+                         incoming().keys().hasAll(['userId', 'title', 'lastMessagePreview', 'messageCount', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'title', 'activeAgent', 'lastMessagePreview', 'messageCount', 'createdAt', 'updatedAt']) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time;
+
+        allow update: if isOwner(userId) &&
+                         isValidId(conversationId) &&
+                         isValidConversation(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['title', 'activeAgent', 'lastMessagePreview', 'messageCount', 'updatedAt']);
+
+        allow delete: if isOwner(userId) && isValidId(conversationId);
+
+        // Conversation Messages Subcollection (Parent Gate enforced on create)
+        match /messages/{messageId} {
+          allow list: if isOwner(userId) && isValidId(conversationId);
+          allow get: if isOwner(userId) && isValidId(conversationId) && isValidId(messageId);
+
+          allow create: if isOwner(userId) &&
+                           isValidId(conversationId) &&
+                           isValidId(messageId) &&
+                           isValidChatMessage(incoming()) &&
+                           incoming().userId == request.auth.uid &&
+                           incoming().keys().hasAll(['userId', 'role', 'senderLabel', 'content', 'createdAt']) &&
+                           incoming().keys().hasOnly(['userId', 'role', 'senderLabel', 'content', 'createdAt']) &&
+                           incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                           exists(/databases/$(database)/documents/users/$(userId)/conversations/$(conversationId));
+
+          allow update: if false;
+          allow delete: if isOwner(userId) && isValidId(conversationId) && isValidId(messageId);
+        }
+      }
+
+      // Five-AI Council Sessions
+      match /councilSessions/{sessionId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(sessionId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(sessionId) &&
+                         isValidCouncilSession(incoming()) &&
+                         incoming().userId == request.auth.uid &&
+                         incoming().keys().hasAll(['userId', 'prompt', 'edithResponse', 'visionResponse', 'ultronResponse', 'fridayResponse', 'jarvisResponse', 'synthesis', 'createdAt']) &&
+                         incoming().keys().hasOnly(['userId', 'prompt', 'edithResponse', 'visionResponse', 'ultronResponse', 'fridayResponse', 'jarvisResponse', 'synthesis', 'createdAt']) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time;
+
+        allow update: if false;
+        allow delete: if isOwner(userId) && isValidId(sessionId);
+      }
+
+      // Social Feed Posts
+      match /feedPosts/{postId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(postId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(postId) &&
+                         isValidFeedPost(incoming()) &&
+                         incoming().userId == request.auth.uid &&
+                         incoming().keys().hasAll(['userId', 'authorName', 'text', 'likes', 'likedByMe', 'comments', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'authorName', 'text', 'likes', 'likedByMe', 'comments', 'createdAt', 'updatedAt']) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time;
+
+        allow update: if isOwner(userId) &&
+                         isValidId(postId) &&
+                         isValidFeedPost(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         (
+                           // Action: Toggle Like
+                           incoming().diff(existing()).affectedKeys().hasOnly(['likes', 'likedByMe', 'updatedAt']) ||
+                           // Action: Add Comment
+                           incoming().diff(existing()).affectedKeys().hasOnly(['comments', 'updatedAt'])
+                         );
+
+        allow delete: if isOwner(userId) && isValidId(postId);
+      }
+
+      // Saved Library Items
+      match /libraryItems/{itemId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(itemId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(itemId) &&
+                         isValidLibraryItem(incoming()) &&
+                         incoming().userId == request.auth.uid &&
+                         incoming().keys().hasAll(['userId', 'title', 'category', 'content', 'createdAt']) &&
+                         incoming().keys().hasOnly(['userId', 'title', 'category', 'content', 'createdAt']) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time;
+
+        allow update: if false;
+        allow delete: if isOwner(userId) && isValidId(itemId);
+      }
+    }
+  }
+}
