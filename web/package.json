@@ -1,0 +1,9 @@
+{
+  "name": "hitler-ai-web",
+  "version": "4.0.0",
+  "private": true,
+  "scripts": {
+    "check": "node --check app.js",
+    "test": "node --test"
+  }
+}
